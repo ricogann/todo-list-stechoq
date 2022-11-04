@@ -1,17 +1,25 @@
 const prisma = require('../helper/database');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+
 dotenv.config();
 
-class _user {
-    getUsers = async (req, res) => {
+// const salt = await bcrypt.genSalt(10);
+
+class _todo {
+    getTodo = async (req) => {
         try {
-            const user = await prisma.user.findMany();
+            const todo = await prisma.todo.findMany({
+                where:{
+                    userId: String(req.user.id),
+                }
+            });
 
             return {
                 status: 'true',
                 code: 200,
-                data: user.filter((b) => b.email === req.user.email),
+                data: todo,
             }
         } catch (error) {
             console.log(error);
@@ -22,37 +30,21 @@ class _user {
         }
     }
 
-    getUsersAll = async () => {
+    addTodo = async (req, body) => {
+        const todos = body.todo;        
+        const id = String(req.user.id);
+        console.log(todos);
         try {
-            const user = await prisma.user.findMany();
-
-            return {
-                status: 'true',
-                code: 200,
-                data: user,
-            }
-        } catch (error) {
-            console.log(error);
-            return {
-                status: 'false',
-                error
-            }
-        }
-    }
-
-    addUsers = async (body) => {
-        const hash_password = await bcrypt.hash(body.password, 12);
-        try {
-            const user = await prisma.user.create({
+            const todo = await prisma.todo.create({
                 data:{
-                    email: body.email,
-                    password: hash_password,
+                    userId: id,
+                    todo: todos,
                 }
             });
             return {
                 status: 'true',
                 code: 200,
-                data: user,
+                data: todo,
             }
         }catch(error){
             console.log(error);
@@ -63,21 +55,20 @@ class _user {
         }
     }
 
-    updateUsers = async (body) => {
+    updateTodo = async (body) => {
         try {
-            const user = await prisma.user.update({
+            const todo = await prisma.todo.update({
                 where:{
                     id: Number(body.id),
                 },
                 data:{
-                    email: body.email,
-                    password: body.password,
+                    todo: body.todo,
                 }
             })
             return {
                 status: 'true',
                 code: 200,
-                data: user,
+                data: todo,
             }
         } catch (error) {
             console.log(error)
@@ -88,9 +79,9 @@ class _user {
         }
     }
 
-    deleteUsers = async (id) => {
+    deleteTodo = async (id) => {
         try {
-            const user = await prisma.user.delete({
+            const todo = await prisma.todo.delete({
                 where:{
                     id: Number(id),
                 }
@@ -98,7 +89,7 @@ class _user {
             return {
                 status: 'true',
                 code: 200,
-                data: user,
+                data: todo,
             }
         } catch (error) {
             console.log(error);
@@ -111,4 +102,4 @@ class _user {
 
 }
 
-module.exports = new _user();
+module.exports = new _todo();
